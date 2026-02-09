@@ -11,9 +11,9 @@ const Countdown = ({ targetDate = "2026-02-12T00:00:00" }) => {
 
   // --- 🎆 FIREWORKS ENGINE ---
   const launchFireworks = () => {
-    const duration = 3 * 1000; // Fire for 3 seconds
+    const duration = 3 * 1000; // Fire for 5 seconds
     const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 999 };
+    const defaults = { startVelocity: 20, spread: 360, ticks: 60, zIndex: 999 };
 
     const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
@@ -24,8 +24,8 @@ const Countdown = ({ targetDate = "2026-02-12T00:00:00" }) => {
         return clearInterval(interval);
       }
 
-      const particleCount = 50 * (timeLeft / duration);
-      
+      const particleCount = 80 * (timeLeft / duration); // Increased particles
+
       // Shoot from left
       confetti({
         ...defaults,
@@ -37,6 +37,12 @@ const Countdown = ({ targetDate = "2026-02-12T00:00:00" }) => {
         ...defaults,
         particleCount,
         origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+      });
+      // Shoot from bottom center
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.4, 0.6), y: 1.2 }
       });
     }, 250);
   };
@@ -83,23 +89,23 @@ const Countdown = ({ targetDate = "2026-02-12T00:00:00" }) => {
   }, [targetDate]);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ y: -50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="fixed top-6 md:top-8 left-1/2 -translate-x-1/2 z-50 w-[90%] md:w-auto pointer-events-none" // pointer-events-none lets clicks pass through
+      className="fixed top-6 md:top-8 mb-30 left-1/2 -translate-x-1/2 z-50 w-[90%] md:w-auto pointer-events-none" // pointer-events-none lets clicks pass through
     >
-      <div className="relative overflow-hidden group pointer-events-auto"> {/* Enable clicks only on the box */}
-        
+      {/* <div className="relative  overflow-hidden group pointer-events-auto"> Enable clicks only on the box */}
+
         {/* Animated Glow Border */}
-        <div className={`absolute -inset-1 bg-gradient-to-r ${isFinished ? 'from-green-500 to-emerald-500' : 'from-pink-500/20 to-purple-500/20'} rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 animate-pulse`} />
-        
+        <div className={`absolute -inset-1  bg-gradient-to-r ${isFinished ? 'from-pink-500 via-purple-500 to-fuchsia-500' : 'from-pink-500/20 to-purple-500/20'} rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 animate-pulse`} />
+
         {/* Main Glass Container */}
         <div className="relative bg-[#0a0a0a]/90 border border-white/10 px-6 py-3 md:px-8 md:py-4 rounded-full backdrop-blur-xl shadow-2xl flex items-center justify-center min-w-[300px]">
-          
+
           <AnimatePresence mode="wait">
             {!isFinished ? (
               // --- STATE 1: COUNTDOWN ---
-              <motion.div 
+              <motion.div
                 key="timer"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -109,7 +115,7 @@ const Countdown = ({ targetDate = "2026-02-12T00:00:00" }) => {
                 <div className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-pink-500/10 text-pink-500">
                   <TfiAlarmClock className="text-lg animate-pulse" />
                 </div>
-                
+
                 <div className="flex gap-4 md:gap-8 divide-x divide-white/10">
                   <TimeUnit value={timeLeft.days} label="DAYS" />
                   <TimeUnit value={timeLeft.hours} label="HRS" />
@@ -119,25 +125,33 @@ const Countdown = ({ targetDate = "2026-02-12T00:00:00" }) => {
               </motion.div>
             ) : (
               // --- STATE 2: EVENT STARTED / FIREWORKS ---
-              <motion.div 
+              <motion.div
                 key="live"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-3"
+                initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                className="flex  flex-col items-center justify-center text-center gap-2 py-2"
               >
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                </span>
-                <span className="text-lg md:text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-600 tracking-widest uppercase">
-                  Event Live
+                {/* 1. Status Indicator */}
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="relative flex h-2 w-2 md:h-3 md:w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 md:h-3 md:w-3 bg-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.8)]"></span>
+                  </span>
+                  <span className="text-[9px] md:text-[10px] font-bold text-pink-400 tracking-[0.2em] uppercase animate-pulse">
+                    System Ready
+                  </span>
+                </div>
+
+                {/* 2. Main Headline */}
+                <span className="text-xl  md:text-3xl font-black italic bg-clip-text text-transparent bg-gradient-to-r from-pink-400 via-fuchsia-500 to-purple-500 tracking-tighter uppercase animate-pulse" style={{ animationDuration: '1.5s' }}>
+                  Website Live Shortly
                 </span>
               </motion.div>
             )}
           </AnimatePresence>
 
         </div>
-      </div>
+      {/* </div> */}
     </motion.div>
   );
 };
