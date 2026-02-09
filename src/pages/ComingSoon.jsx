@@ -1,53 +1,37 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate } from "framer-motion";
+
+import NoiseOverlay from "../components/common/NoiseOverlay";
+import Hero from "../components/home/Hero";
+import Countdown from "../components/home/Countdown";
 
 const ComingSoon = () => {
-  const logoRef = useRef(null);
   const audioRef = useRef(null);
   const [soundEnabled, setSoundEnabled] = useState(false);
 
-  /* 🔔 AUTO EVENT ON VISIT */
+  // --- MOUSE SPOTLIGHT ENGINE ---
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // --- PHYSICS SCROLL ENGINE ---
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+
+  // Parallax Animations
+  const bgTextX = useTransform(scrollYProgress, [0, 1], ["0%", "-50%"]);
+  const yParallax = useTransform(scrollYProgress, [0, 1], [0, -200]);
+  const particleY = useTransform(scrollYProgress, [0, 1], [0, -100]);
+
   useEffect(() => {
-    window.dispatchEvent(
-      new CustomEvent("PANACHE_VISIT", {
-        detail: {
-          page: "coming-soon",
-          timestamp: Date.now(),
-        },
-      })
-    );
-  }, []);
-
-  /* 🎥 3D Parallax Tilt */
-  useEffect(() => {
-    const logo = logoRef.current;
-    if (!logo) return;
-
-    const handleMove = (e) => {
-      const { innerWidth, innerHeight } = window;
-      const x = (e.clientX / innerWidth - 0.5) * 18;
-      const y = (e.clientY / innerHeight - 0.5) * -18;
-
-      logo.style.transform = `
-        perspective(1200px)
-        rotateX(${y}deg)
-        rotateY(${x}deg)
-        scale(1.06)
-      `;
+    const handleMouseMove = ({ clientX, clientY }) => {
+      mouseX.set(clientX);
+      mouseY.set(clientY);
     };
-
-    const reset = () => {
-      logo.style.transform =
-        "perspective(1200px) rotateX(0deg) rotateY(0deg) scale(1)";
-    };
-
-    window.addEventListener("mousemove", handleMove);
-    window.addEventListener("mouseleave", reset);
-
+    window.addEventListener("mousemove", handleMouseMove);
     return () => {
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseleave", reset);
+      window.removeEventListener("mousemove", handleMouseMove);
     };
-  }, []);
+  }, [mouseX, mouseY]);
 
   /* 🎶 Browser-safe autoplay */
   useEffect(() => {
@@ -58,11 +42,11 @@ const ComingSoon = () => {
     audio.loop = true;
     audio.muted = true;
 
-    audio.play().catch(() => {});
+    audio.play().catch(() => { });
 
     const enableSound = () => {
       audio.muted = false;
-      audio.play().catch(() => {});
+      audio.play().catch(() => { });
       setSoundEnabled(true);
     };
 
@@ -77,63 +61,90 @@ const ComingSoon = () => {
     };
   }, []);
 
+  // Dynamic Background Gradient
+  const backgroundStyle = useMotionTemplate`
+      radial-gradient(
+        600px circle at ${mouseX}px ${mouseY}px,
+        rgba(236, 72, 153, 0.15),
+        transparent 80%
+      )
+    `;
+
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-black via-zinc-900 to-purple-950 text-white">
-
-      {/* 🎶 Audio */}
+    <div className="relative bg-[#050505] text-white selection:bg-pink-500/30 font-sans min-h-screen overflow-hidden">
       <audio ref={audioRef} src="/music.mp3" preload="auto" />
+      <NoiseOverlay />
 
-      {/* 🌌 Background Glow */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-purple-600/30 blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 h-72 w-72 rounded-full bg-pink-600/30 blur-3xl animate-pulse delay-200" />
-        <div className="absolute top-10 right-1/3 h-64 w-64 rounded-full bg-indigo-600/20 blur-3xl animate-pulse delay-500" />
+      {/* --- GRID BACKGROUND --- */}
+      {/* <div className="fixed inset-0 z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+        <div className="fixed inset-0 z-0 opacity-[0.03]"
+             style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '50px 50px' }}
+        /> */}
+
+      {/* --- MOUSE SPOTLIGHT --- */}
+      <motion.div
+        className="pointer-events-none fixed inset-0 z-10 transition-opacity duration-300"
+        style={{ background: backgroundStyle }}
+      />
+
+{/* // Set date to yesterday to force fireworks immediately */}
+      <Countdown targetDate="2026-02-11T00:00:00" />
+
+      {/* Progress Bar */}
+      <motion.div
+        style={{ scaleX }}
+        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 origin-left z-50 shadow-[0_0_20px_rgba(236,72,153,0.5)]"
+      />
+
+      {/* Fixed Parallax Elements */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <motion.div style={{ y: yParallax }} className="relative w-full h-[120vh]">
+          {/* Glowing Orbs */}
+          <div className="absolute top-[10%] left-[20%] w-[30vw] h-[30vw] bg-purple-600/20 rounded-full blur-[100px] animate-pulse" />
+          <div className="absolute bottom-[20%] right-[10%] w-[25vw] h-[25vw] bg-pink-600/10 rounded-full blur-[100px] animate-pulse delay-700" />
+        </motion.div>
+
+        {/* Floating Particles */}
+        <motion.div style={{ y: particleY }} className="absolute inset-0">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute bg-white/10 rounded-full blur-[1px]"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                width: `${Math.random() * 4 + 2}px`,
+                height: `${Math.random() * 4 + 2}px`,
+                animation: `float ${Math.random() * 10 + 10}s linear infinite`
+              }}
+            />
+          ))}
+        </motion.div>
+
+        {/* Huge Scrolling Text */}
+        <motion.div style={{ x: bgTextX }} className="absolute top-1/2 left-0 -translate-y-1/2 w-[200%]">
+          <div className="text-[25vw] font-black text-white/[0.02] whitespace-nowrap uppercase italic tracking-tighter leading-none select-none">
+            Panache 2026 • Innovation • Culture • Panache 2026
+          </div>
+        </motion.div>
       </div>
 
-      {/* 🧠 Content */}
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 text-center gap-10">
+      {/* --- MAIN CONTENT --- */}
+      <div className="relative z-20">
+        <Hero />
+      </div>
 
-        {/* LOGO */}
-        <img
-          ref={logoRef}
-          src="/panache-logo.png"
-          alt="Panache Logo"
-          className="
-            w-72 md:w-96
-            transition-transform duration-200 ease-out
-            drop-shadow-[0_0_80px_rgba(168,85,247,0.85)]
-            animate-[pulse_2.5s_ease-in-out_infinite]
-          "
-        />
-
-        {/* COMING SOON */}
-        <span
-          className="
-            rounded-full
-            border border-purple-400/40
-            bg-purple-500/10
-            px-10 py-4
-            text-lg md:text-xl
-            font-semibold
-            tracking-widest
-            text-purple-200
-            backdrop-blur-xl
-            shadow-[0_0_30px_rgba(168,85,247,0.35)]
-            animate-pulse
-          "
-        >
-          🚀 COMING SOON
-        </span>
-
-        {/* 🔊 SOUND HINT */}
-        {!soundEnabled && (
+      {/* 🔊 SOUND HINT */}
+      {!soundEnabled && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
           <span className="text-sm text-purple-300/70 animate-pulse select-none">
             🔊 Tap anywhere to enable sound
           </span>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
+
 };
 
 export default ComingSoon;
