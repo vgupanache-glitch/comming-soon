@@ -88,7 +88,7 @@ const ComingSoon = () => {
       />
 
 {/* // Set date to yesterday to force fireworks immediately */}
-      <Countdown targetDate="2026-01-11T00:00:00" />
+      <Countdown targetDate="2026-02-12T00:00:00" />
 
       {/* Progress Bar */}
       <motion.div
