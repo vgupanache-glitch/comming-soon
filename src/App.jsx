@@ -14,6 +14,7 @@ function App() {
         <Routes>
           {/* THE ONLY ACTIVE ROUTE */}
           <Route path="/" element={<ComingSoon />} />
+        
 
           {/* CATCH-ALL REDIRECT: Sends all other paths to root */}
           <Route path="*" element={<Navigate to="/" replace />} />
