@@ -79,7 +79,7 @@ const Hero = () => {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-pink-500/30 bg-pink-500/10 backdrop-blur-md shadow-[0_0_15px_rgba(236,72,153,0.3)]">
             <div className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-pulse" />
             <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-pink-200">
-              Edition 16 Loading
+              S16 Website Loading
             </span>
           </div>
         </div>
