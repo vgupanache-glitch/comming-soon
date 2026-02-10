@@ -9,6 +9,7 @@ import Countdown from "../components/home/Countdown";
 const ComingSoon = () => {
   const audioRef = useRef(null);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [isTabActive, setIsTabActive] = useState(true);
 
   // --- MOUSE SPOTLIGHT ENGINE ---
   const mouseX = useMotionValue(0);
@@ -22,7 +23,7 @@ const ComingSoon = () => {
   const yParallax = useTransform(scrollYProgress, [0, 1], [0, -200]);
   const particleY = useTransform(scrollYProgress, [0, 1], [0, -100]);
 
-  // --- 🎆 WELCOME FIREWORKS ---
+  // --- 🎆 FIREWORKS ---
   useEffect(() => {
     const fireSkyShort = (xOrigin) => {
       confetti({
@@ -42,9 +43,50 @@ const ComingSoon = () => {
     fireSkyShort(0.2);
     const t1 = setTimeout(() => fireSkyShort(0.8), 400);
     const t2 = setTimeout(() => fireSkyShort(0.5), 800);
-
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
+
+  // --- 🎶 MOBILE & TAB-AWARE AUDIO ENGINE ---
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = 0.6;
+    audio.loop = true;
+
+    // Function to handle play/pause based on visibility
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        audio.pause(); // Stops music when switching tabs or minimizing Chrome
+        setIsTabActive(false);
+      } else {
+        setIsTabActive(true);
+        // Only resume if the user had already enabled sound previously
+        if (soundEnabled) {
+          audio.play().catch(() => {});
+        }
+      }
+    };
+
+    const enableSound = () => {
+      audio.muted = false;
+      audio.play().catch((e) => console.log("Autoplay prevented:", e));
+      setSoundEnabled(true);
+      // Remove listeners after first interaction
+      window.removeEventListener("click", enableSound);
+      window.removeEventListener("touchstart", enableSound);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("click", enableSound);
+    window.addEventListener("touchstart", enableSound);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("click", enableSound);
+      window.removeEventListener("touchstart", enableSound);
+    };
+  }, [soundEnabled]);
 
   // --- MOUSE TRACKING ---
   useEffect(() => {
@@ -56,50 +98,6 @@ const ComingSoon = () => {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [mouseX, mouseY]);
 
-  // --- 🎶 AUDIO ENGINE (Enhanced) ---
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    // Load preference from session so it persists on refresh
-    const hasInteracted = sessionStorage.getItem("audioAllowed") === "true";
-
-    audio.volume = 0.6;
-    audio.loop = true;
-
-    const startAudio = () => {
-      audio.muted = false;
-      audio.play()
-        .then(() => {
-          setSoundEnabled(true);
-          sessionStorage.setItem("audioAllowed", "true");
-        })
-        .catch((err) => console.log("Playback blocked:", err));
-    };
-
-    if (hasInteracted) {
-      startAudio();
-    }
-
-    // Interaction listeners to unlock audio
-    const unlock = () => {
-      startAudio();
-      window.removeEventListener("click", unlock);
-      window.removeEventListener("touchstart", unlock);
-      window.removeEventListener("keydown", unlock);
-    };
-
-    window.addEventListener("click", unlock);
-    window.addEventListener("touchstart", unlock);
-    window.addEventListener("keydown", unlock);
-
-    return () => {
-      window.removeEventListener("click", unlock);
-      window.removeEventListener("touchstart", unlock);
-      window.removeEventListener("keydown", unlock);
-    };
-  }, []);
-
   const backgroundStyle = useMotionTemplate`
       radial-gradient(
         600px circle at ${mouseX}px ${mouseY}px,
@@ -110,43 +108,27 @@ const ComingSoon = () => {
 
   return (
     <div className="relative bg-[#050505] text-white selection:bg-pink-500/30 font-sans min-h-screen overflow-hidden">
-      {/* Ensure the source path is correct relative to your public folder */}
       <audio ref={audioRef} src="/music.mp3" preload="auto" />
-      
       <NoiseOverlay />
 
       <motion.div
-        className="pointer-events-none fixed inset-0 z-10"
+        className="pointer-events-none fixed inset-0 z-10 transition-opacity duration-300"
         style={{ background: backgroundStyle }}
       />
 
       <Countdown targetDate="2026-02-12T00:00:00" />
 
+      {/* Progress Bar */}
       <motion.div
         style={{ scaleX }}
         className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 origin-left z-50 shadow-[0_0_20px_rgba(236,72,153,0.5)]"
       />
 
+      {/* Parallax Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <motion.div style={{ y: yParallax }} className="relative w-full h-[120vh]">
           <div className="absolute top-[10%] left-[20%] w-[30vw] h-[30vw] bg-purple-600/20 rounded-full blur-[100px] animate-pulse" />
           <div className="absolute bottom-[20%] right-[10%] w-[25vw] h-[25vw] bg-pink-600/10 rounded-full blur-[100px] animate-pulse delay-700" />
-        </motion.div>
-
-        <motion.div style={{ y: particleY }} className="absolute inset-0">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute bg-white/10 rounded-full blur-[1px]"
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                width: `${Math.random() * 4 + 2}px`,
-                height: `${Math.random() * 4 + 2}px`,
-                animation: `float ${Math.random() * 10 + 10}s linear infinite`
-              }}
-            />
-          ))}
         </motion.div>
 
         <motion.div style={{ x: bgTextX }} className="absolute top-1/2 left-0 -translate-y-1/2 w-[200%]">
@@ -160,14 +142,15 @@ const ComingSoon = () => {
         <Hero />
       </div>
 
+      {/* UI FEEDBACK FOR SOUND */}
       {!soundEnabled && (
         <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl cursor-pointer active:scale-95 transition-transform"
         >
-          <span className="text-xs uppercase tracking-widest text-purple-300/80 animate-pulse">
-            🔊 Tap to enable Panache Soundscape
+          <span className="text-xs font-medium uppercase tracking-[0.2em] text-pink-400 animate-pulse">
+             Tap for Sound
           </span>
         </motion.div>
       )}
