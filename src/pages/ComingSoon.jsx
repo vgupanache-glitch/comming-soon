@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate } from "framer-motion";
+import confetti from "canvas-confetti"; // ✅ Import Confetti
 
 import NoiseOverlay from "../components/common/NoiseOverlay";
 import Hero from "../components/home/Hero";
@@ -21,6 +22,37 @@ const ComingSoon = () => {
   const bgTextX = useTransform(scrollYProgress, [0, 1], ["0%", "-50%"]);
   const yParallax = useTransform(scrollYProgress, [0, 1], [0, -200]);
   const particleY = useTransform(scrollYProgress, [0, 1], [0, -100]);
+
+  // --- 🎆 WELCOME FIREWORKS ENGINE ---
+  useEffect(() => {
+    // 1. Define the explosion style
+    const fireSkyShort = (xOrigin) => {
+      confetti({
+        particleCount: 60,
+        spread: 80,
+        origin: { x: xOrigin, y: 0.6 }, // Fire from mid-screen height
+        colors: ['#ec4899', '#a855f7', '#06b6d4', '#ffffff'], // Pink, Purple, Cyan, White
+        disableForReducedMotion: true,
+        zIndex: 5, // Behind the hero text (usually)
+        scalar: 0.8, // Smaller particles for "Sky Short" feel
+        drift: 0,
+        gravity: 1.2,
+        startVelocity: 35,
+        ticks: 200
+      });
+    };
+
+    // 2. Trigger a sequence on load
+    const duration = 1500;
+    const end = Date.now() + duration;
+
+    // Fire immediately
+    fireSkyShort(0.2); // Left side
+    
+    setTimeout(() => fireSkyShort(0.8), 400); // Right side after 400ms
+    setTimeout(() => fireSkyShort(0.5), 800); // Center after 800ms
+
+  }, []); // Empty array = Runs once when user arrives
 
   useEffect(() => {
     const handleMouseMove = ({ clientX, clientY }) => {
@@ -75,19 +107,12 @@ const ComingSoon = () => {
       <audio ref={audioRef} src="/music.mp3" preload="auto" />
       <NoiseOverlay />
 
-      {/* --- GRID BACKGROUND --- */}
-      {/* <div className="fixed inset-0 z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
-        <div className="fixed inset-0 z-0 opacity-[0.03]"
-             style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '50px 50px' }}
-        /> */}
-
       {/* --- MOUSE SPOTLIGHT --- */}
       <motion.div
         className="pointer-events-none fixed inset-0 z-10 transition-opacity duration-300"
         style={{ background: backgroundStyle }}
       />
 
-{/* // Set date to yesterday to force fireworks immediately */}
       <Countdown targetDate="2026-02-12T00:00:00" />
 
       {/* Progress Bar */}
