@@ -140,7 +140,7 @@ const ComingSoon = () => {
         style={{ background: backgroundStyle }}
       />
 
-      <Countdown targetDate="2026-02-12T00:00:00" />
+      <Countdown targetDate="2026-02-12T11:00:00" />
 
       {/* Progress Bar */}
       <motion.div
