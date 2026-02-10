@@ -23,7 +23,7 @@ const ComingSoon = () => {
   const yParallax = useTransform(scrollYProgress, [0, 1], [0, -200]);
   const particleY = useTransform(scrollYProgress, [0, 1], [0, -100]);
 
-  // --- 🎆 FIREWORKS ---
+  // --- 🎆 AUTOMATIC FIREWORKS (ON LOAD) ---
   useEffect(() => {
     const fireSkyShort = (xOrigin) => {
       confetti({
@@ -45,6 +45,30 @@ const ComingSoon = () => {
     const t2 = setTimeout(() => fireSkyShort(0.5), 800);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
+
+  // --- 🧨 MANUAL FIREWORK TRIGGER (CLICK HANDLER) ---
+  const handleManualFirework = () => {
+    // Play a random burst from the bottom right corner
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.9, x: 1 }, // Bottom Right Origin
+      colors: ['#ec4899', '#a855f7', '#06b6d4', '#ffffff'],
+      zIndex: 100, // Very high to appear above everything
+    });
+
+    // Also fire a smaller one from the left for balance
+    setTimeout(() => {
+        confetti({
+            particleCount: 50,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#ec4899', '#a855f7'],
+            zIndex: 100,
+          });
+    }, 200);
+  };
 
   // --- 🎶 MOBILE & TAB-AWARE AUDIO ENGINE ---
   useEffect(() => {
@@ -107,7 +131,7 @@ const ComingSoon = () => {
     `;
 
   return (
-    <div className="relative bg-[#050505] text-white selection:bg-pink-500/30 font-sans min-h-screen overflow-hidden">
+    <div className="relative bg-[#050505] text-white selection:bg-pink-500/30 font-sans min-h-screen overflow-hidden flex flex-col justify-between">
       <audio ref={audioRef} src="/music.mp3" preload="auto" />
       <NoiseOverlay />
 
@@ -142,12 +166,54 @@ const ComingSoon = () => {
         <Hero />
       </div>
 
-      {/* UI FEEDBACK FOR SOUND */}
+      {/* --- FLOATING FIREWORK BUTTON (Bottom Right) --- */}
+      <motion.button
+        onClick={handleManualFirework}
+        whileHover={{ scale: 1.1, rotate: 10 }}
+        whileTap={{ scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1 }}
+        className="fixed bottom-20 right-6 z-50 p-4  rounded-full shadow-[0_0_30px_rgba(236,72,153,0.6)] border border-white/20 hover:shadow-[0_0_50px_rgba(236,72,153,0.9)] transition-all group"
+      >
+        <span className="text-xl group-hover:animate-spin block">🎆</span>
+      </motion.button>
+
+      {/* --- FOOTER SECTION --- */}
+      <footer className="fixed bottom-0 left-0 w-full z-40 py-4 bg-gradient-to-t from-black via-black/80 to-transparent">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-[10px] md:text-xs font-mono tracking-[0.2em] text-white/40 uppercase mb-2">
+            Designed & Developed by{' '}
+            <a 
+              href="https://www.linkedin.com/in/manjeet-kumar-50a463301/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-pink-500/80 hover:text-pink-400 transition-colors duration-300 border-b border-pink-500/20 hover:border-pink-400"
+            >
+              Manjeet
+            </a>
+            {' '}&{' '}
+            <a 
+              href="https://www.linkedin.com/in/harshitchoudhayin?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-cyan-500/80 hover:text-cyan-400 transition-colors duration-300 border-b border-cyan-500/20 hover:border-cyan-400"
+            >
+              Harshit
+            </a>
+          </p>
+          <p className="text-[10px] text-white/20 font-sans tracking-wide">
+            © {new Date().getFullYear()} VGU Panache Team. All Rights Reserved.
+          </p>
+        </div>
+      </footer>
+
+      {/* UI FEEDBACK FOR SOUND (Moved to Left to balance UI) */}
       {!soundEnabled && (
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl cursor-pointer active:scale-95 transition-transform"
+          className="fixed bottom-20 left-6 z-50 px-6 py-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl cursor-pointer active:scale-95 transition-transform"
         >
           <span className="text-xs font-medium uppercase tracking-[0.2em] text-pink-400 animate-pulse">
              Tap for Sound

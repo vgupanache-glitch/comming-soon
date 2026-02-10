@@ -93,11 +93,11 @@ const Hero = () => {
       <ActiveScrollReveal delay={0.2} direction="up">
         <div className="text-center max-w-2xl mx-auto space-y-6">
           <h1 className="text-xl md:text-3xl font-light text-gray-300 tracking-wide font-mono">
-             <span className="text-pink-500">&gt;</span> <ScrambleText text="THE ANNUAL CULTURAL FEST" />
+             <span className="text-pink-500">&gt;</span> <ScrambleText text="PANACHE | PRATISTHA | PRAGATI" />
           </h1>
           
           <p className="text-gray-500 text-sm md:text-base leading-relaxed px-6">
-            Prepare for an convergence of art, technology, and culture. 
+            Prepare for convergence of culture, sports and technology. 
             VGU Jaipur is about to witness the extraordinary.
           </p>
 

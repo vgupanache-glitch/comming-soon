@@ -2,13 +2,15 @@ import { useRef } from "react";
 import { motion, useInView, useTransform } from "framer-motion";
 import HybridLogoCard from "./HybridLogoCard";
 
-import p from "../../assets/p.png";
-import a1 from "../../assets/a1.png";
-import n from "../../assets/n.png";
-import a2 from "../../assets/a2.png";
-import c from "../../assets/c.png";
-import h from "../../assets/h.png";
-import e from "../../assets/e.png";
+import p from "../../../public/p.svg";
+import a1 from "../../../public/a1.svg";
+import n from "../../../public/n.svg";
+import a2 from "../../../public/a2.svg";
+import c from "../../../public/c.svg";
+import h from "../../../public/h.svg";
+import e from "../../../public/e.svg";
+
+
 
 
 const PanacheHybridLogo = ({ mouseX, mouseY }) => {
