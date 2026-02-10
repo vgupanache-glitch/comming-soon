@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ComingSoon from './pages/ComingSoon';
 import { Toaster } from 'sonner'; 
-import './App.css';
+
 
 import { Analytics } from "@vercel/analytics/react"
 
